@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+
+<!-- Mobile scaling -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+<title>True / False Game</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    font-family: "Times New Roman", Times, serif;
+    color: white;
+    font-weight: bold;
+    -webkit-text-stroke: 1px black;
+    text-shadow: 1px 1px 0 #000;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Rainbow background */
+.rainbow-bg {
+    background: linear-gradient(270deg, red, orange, yellow, green, blue, indigo, violet);
+    background-size: 1400% 1400%;
+    animation: rainbowBG 20s ease infinite;
+}
+
+/* Gray gameplay */
+.game-bg {
+    background: #555;
+}
+
+@keyframes rainbowBG {
+    0% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
+    100% {background-position: 0% 50%;}
+}
+
+#gameContainer {
+    width: 100%;
+    max-width: 420px;
+    padding: 10px;
+    text-align: center;
+}
+
+button {
+    width: 90%;
+    max-width: 320px;
+    padding: 12px;
+    margin: 8px;
+    font-size: 1.3rem;
+    border-radius: 12px;
+    border: 2px solid white;
+    background: rgba(255,255,255,0.25);
+    color: white;
+}
+
+#startBtn {
+    font-size: 1.6rem;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}
+
+.hidden { display: none; }
+
+#wrongCounter { font-size: 1.3rem; }
+#timer { font-size: 1.8rem; }
+#problem { font-size: 2.5rem; margin: 10px 0; }
+#feedback { font-size: 1.4rem; height: 40px; }
+
+#score {
+    font-size: 2.2rem;
+    animation: pulse 1s infinite;
+}
+
+#rating { font-size: 1.3rem; }
+
+#shareContainer button {
+    background: linear-gradient(270deg, red, orange, yellow, green, blue, indigo, violet);
+    background-size: 1400% 1400%;
+    animation: rainbowBG 20s ease infinite;
+}
+
+#gameDateTime {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 15px;
+}
+
+#daju {
+    margin-top: 10px;
+    font-size: 1.1rem;
+}
+</style>
+</head>
+
+<body class="rainbow-bg">
+
+<div id="gameContainer">
+
+<button id="startBtn" onclick="startGame()">CLICK TO START</button>
+
+<div id="gameUI" class="hidden">
+    <div id="wrongCounter">0/10</div>
+    <div id="timer">2.10s</div>
+    <div id="problem"></div>
+    <div id="feedback"></div>
+
+    <button onclick="selectAnswer(true)">True</button>
+    <button onclick="selectAnswer(false)">False</button>
+</div>
+
+<div id="endGameContainer" class="hidden">
+    <div id="gameDateTime">
+        <div id="gameDate"></div>
+        <div id="gameTime"></div>
+    </div>
+
+    <div id="score">🏆 0</div>
+    <div id="rating"></div>
+
+    <div id="shareContainer">
+        <a id="shareTelegram" target="_blank">
+            <button>Share on Telegram</button>
+        </a>
+    </div>
+
+    <div id="daju">DaJu</div>
+</div>
+
+</div>
+
+<script>
+let score = 0;
+let wrong = 0;
+let correctAnswer = true;
+const limit = 2100;
+let timerID;
+
+function newProblem() {
+    if (wrong >= 10) return endGame();
+
+    let a = Math.floor(Math.random()*10);
+    let b = Math.floor(Math.random()*10);
+
+    correctAnswer = Math.random() < 0.5;
+    let result = correctAnswer ? a+b : Math.floor(Math.random()*20);
+
+    document.getElementById("problem").innerText = `${a} + ${b} = ${result}`;
+    document.getElementById("feedback").innerText = "";
+
+    timerID = setTimeout(()=>{
+        wrong++;
+        document.getElementById("wrongCounter").innerText = `${wrong}/10`;
+        newProblem();
+    }, limit);
+}
+
+function startGame() {
+    score = 0;
+    wrong = 0;
+
+    document.body.className = "game-bg";
+    document.getElementById("startBtn").classList.add("hidden");
+    document.getElementById("gameUI").classList.remove("hidden");
+
+    newProblem();
+}
+
+function selectAnswer(ans) {
+    clearTimeout(timerID);
+
+    if ((ans && correctAnswer) || (!ans && !correctAnswer)) {
+        score++;
+        document.getElementById("feedback").innerText = "Nice ka 👍🏽";
+    } else {
+        wrong++;
+        document.getElementById("feedback").innerText = "HAHAHA 👎🏽";
+    }
+
+    document.getElementById("wrongCounter").innerText = `${wrong}/10`;
+
+    setTimeout(newProblem, 300);
+}
+
+function endGame() {
+    document.getElementById("gameUI").classList.add("hidden");
+    document.getElementById("endGameContainer").classList.remove("hidden");
+    document.body.className = "rainbow-bg";
+
+    document.getElementById("score").innerText = `🏆 ${score}`;
+
+    let total = score + wrong;
+    let rating = ((score/total)*100).toFixed(1);
+    document.getElementById("rating").innerText = `Rating: ${rating}%`;
+
+    let text = `I scored 🏆 ${score} with ${rating}%`;
+    document.getElementById("shareTelegram").href =
+        `https://t.me/NOVEMBER_24_2022?text=${encodeURIComponent(text)}`;
+}
+</script>
+
+</body>
+</html>
